@@ -1,0 +1,27 @@
+﻿@using Prueba.Entidades
+@model Nota
+
+@{
+    ViewData["Title"] = "Borrar Nota";
+}
+
+<h4>@ViewBag.Title</h4>
+
+<hr />
+<div>
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Titulo)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Titulo)
+        </dd>
+    </dl>
+    
+    <form asp-action="BorrarNota">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" value="BorrarNota"  class="btn btn-danger mb-3">Borrar</button>
+        <a class="btn btn-secondary mb-3" asp-action="Index">Cancelar</a>
+    </form>
+</div>
+

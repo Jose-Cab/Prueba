@@ -1,0 +1,27 @@
+﻿@using Prueba.Entidades
+@using Prueba.Models
+@model Nota
+
+@{
+    ViewData["Title"] = "Ver Nota";
+    var viewmodel = new NotaViewModel();
+}
+
+<h4>@ViewBag.Title</h4>
+<hr />
+<div>
+    <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Titulo)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Titulo)
+        </dd>
+
+    </dl>
+</div>
+<div>
+    <a class="btn btn-primary mb-3" asp-action="EditarNota" asp-route-id="@Model?.Id">Editar</a>
+    <a class="btn btn-secondary mb-3" asp-action="Index">Volver a Notas</a>
+</div>
+

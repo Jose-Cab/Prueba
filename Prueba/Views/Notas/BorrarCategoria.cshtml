@@ -1,0 +1,27 @@
+﻿@using Prueba.Entidades
+@model CategoriaNota
+
+@{
+    ViewData["Title"] = "Borrar Categoria";
+}
+
+<h4>@ViewBag.Title</h4>
+
+<hr />
+<div>
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Nombre)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Nombre)
+        </dd>
+    </dl>
+    
+    <form asp-action="BorrarCategoria">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" value="BorrarCategoria"  class="btn btn-danger mb-3">Borrar</button>
+        <a class="btn btn-secondary mb-3" asp-action="Categorias">Cancelar</a>
+    </form>
+</div>
+

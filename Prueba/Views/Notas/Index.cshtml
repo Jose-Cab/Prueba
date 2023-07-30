@@ -1,0 +1,38 @@
+﻿@using Prueba.Entidades
+@model IEnumerable<Nota>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>@ViewBag.Title</h1>
+<p>
+    <a class="btn btn-primary mb-3" asp-action="CrearNota">Crear Nota</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Titulo)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Titulo)
+                </td>
+                <td>
+                    <a class="btn btn-primary mb-3" asp-action="EditarNota" asp-route-id="@item.Id">Editar</a>
+                    <a class="btn btn-success mb-3" asp-action="VerNota" asp-route-id="@item.Id">Ver Nota</a>
+                    <a class="btn btn-warning mb-3" asp-action="BorrarNota" asp-route-id="@item.Id">Borrar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+

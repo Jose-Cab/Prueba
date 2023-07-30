@@ -1,0 +1,41 @@
+﻿@using Prueba.Entidades
+@using Prueba.Models
+@model NotaViewModel
+
+@{
+    ViewData["Title"] = "Crear Nota";
+}
+
+<h4>@ViewBag.Title</h4>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="CrearNota">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+
+                <label asp-for="Titulo" class="control-label"></label>
+                <input asp-for="Titulo" class="form-control" /><br />
+                <span asp-validation-for="Titulo" class="text-danger"></span>
+            </div>
+                <div>
+                    @foreach (var categoria in Model.CategoriasNota)
+                    {
+                        <input type="checkbox" name="CategoriaSeleccionadaId" value="@categoria.Id" /> @categoria.Nombre <br>
+                    }
+                </div>
+                <br />
+            <div class="form-group">
+                <button type="submit" value="CrearNota" class="btn btn-primary mb-3">Crear</button>
+                <a class="btn btn-secondary mb-3" asp-action="Index">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
