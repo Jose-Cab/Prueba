@@ -13,28 +13,30 @@ namespace Prueba.Controllers
 {
     public class NotasController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ApplicationDbContext context;
 
         public NotasController(ApplicationDbContext context)
         {
-            _context = context;
+            this.context = context;
         }
 
         // GET: Listado Notas
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Notas.AsNoTracking().ToListAsync()); ;
+            return View(await context.Notas.AsNoTracking().ToListAsync()); ;
         }
 
         // GET: Notas/VerNota
         public async Task<IActionResult> VerNota(int? id)
         {
-            if (id is null || _context.Notas is null)
+            if (id is null || context.Notas is null)
             {
                 return NotFound();
             }
 
-            var nota = await _context.Notas
+            var nota = await context.Notas
+                .Include(c => c.CategoriasNota)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (nota is null)
             {
@@ -49,23 +51,35 @@ namespace Prueba.Controllers
         public IActionResult CrearNota()
         {
             var viewModel = new NotaViewModel ();
-            viewModel.CategoriasNota = _context.CategoriasNota.ToList();
+            viewModel.CategoriasNota = context.CategoriasNota.ToList();
             return View(viewModel);
         }
-
 
         // POST: Notas/CrearNota
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CrearNota([Bind("Id,Titulo")] Nota nota)
+        public async Task<IActionResult> CrearNota(CrearNotaViewModel crearNotaViewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(nota);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(crearNotaViewModel);
             }
-            return View(nota);
+
+            var nota = new Nota();
+            nota.Titulo = crearNotaViewModel.Titulo;
+
+            foreach (var id in crearNotaViewModel.CategoriaSeleccionadaId)
+            {
+                var categoria = await context.CategoriasNota.FindAsync(id);
+                if (categoria != null)
+                {
+                    nota.CategoriasNota.Add(categoria);
+                }
+            }
+
+            context.Add(nota);
+            await context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
 
@@ -73,12 +87,12 @@ namespace Prueba.Controllers
         // GET: Notas/EditarNota
         public async Task<IActionResult> EditarNota(int? id)
         {
-            if (id == null || _context.Notas == null)
+            if (id == null || context.Notas == null)
             {
                 return NotFound();
             }
 
-            var nota = await _context.Notas.FindAsync(id);
+            var nota = await context.Notas.FindAsync(id);
             if (nota == null)
             {
                 return NotFound();
@@ -100,8 +114,8 @@ namespace Prueba.Controllers
             {
                 try
                 {
-                    _context.Update(nota);
-                    await _context.SaveChangesAsync();
+                    context.Update(nota);
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -122,12 +136,12 @@ namespace Prueba.Controllers
         // GET: Notas/BorrarNota
         public async Task<IActionResult> BorrarNota(int? id)
         {
-            if (id == null || _context.Notas == null)
+            if (id == null || context.Notas == null)
             {
                 return NotFound();
             }
 
-            var nota = await _context.Notas
+            var nota = await context.Notas
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (nota == null)
             {
@@ -142,23 +156,23 @@ namespace Prueba.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Notas == null)
+            if (context.Notas == null)
             {
                 return Problem("La Entidad 'ApplicationDbContext.Categoria'  es null.");
             }
-            var nota = await _context.Notas.FindAsync(id);
+            var nota = await context.Notas.FindAsync(id);
             if (nota != null)
             {
-                _context.Notas.Remove(nota);
+                context.Notas.Remove(nota);
             }
             
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         private bool NotaExists(int id)
         {
-          return _context.Notas.Any(e => e.Id == id);
+          return context.Notas.Any(e => e.Id == id);
         }
 
         /* ******************
@@ -170,7 +184,7 @@ namespace Prueba.Controllers
         // GET: Listado CategoriasNota
         public async Task<IActionResult> Categorias()
         {
-            return View(await _context.CategoriasNota.ToListAsync()); 
+            return View(await context.CategoriasNota.ToListAsync()); 
         }
 
         // GET: Notas/CrearCategoria
@@ -186,8 +200,8 @@ namespace Prueba.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(categoriaNota);
-                await _context.SaveChangesAsync();
+                context.Add(categoriaNota);
+                await context.SaveChangesAsync();
                 return RedirectToAction(nameof(Categorias));
             }
             return View(categoriaNota);
@@ -196,12 +210,12 @@ namespace Prueba.Controllers
         // GET: Notas/VerCategoria
         public async Task<IActionResult> VerCategoria(int? id)
         {
-            if (id == null || _context.CategoriasNota == null)
+            if (id == null || context.CategoriasNota == null)
             {
                 return NotFound();
             }
 
-            var categoriaNota = await _context.CategoriasNota
+            var categoriaNota = await context.CategoriasNota
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (categoriaNota == null)
             {
@@ -215,12 +229,12 @@ namespace Prueba.Controllers
         // GET: Notas/EditarCategoria
         public async Task<IActionResult> EditarCategoria(int? id)
         {
-            if (id == null || _context.CategoriasNota == null)
+            if (id == null || context.CategoriasNota == null)
             {
                 return NotFound();
             }
 
-            var categoriaNota = await _context.CategoriasNota.FindAsync(id);
+            var categoriaNota = await context.CategoriasNota.FindAsync(id);
             if (categoriaNota == null)
             {
                 return NotFound();
@@ -242,8 +256,8 @@ namespace Prueba.Controllers
             {
                 try
                 {
-                    _context.Update(categoriaNota);
-                    await _context.SaveChangesAsync();
+                    context.Update(categoriaNota);
+                    await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -265,12 +279,12 @@ namespace Prueba.Controllers
         // GET: Notas/BorrarCategoria
         public async Task<IActionResult> BorrarCategoria(int? id)
         {
-            if (id == null || _context.CategoriasNota == null)
+            if (id == null || context.CategoriasNota == null)
             {
                 return NotFound();
             }
 
-            var categoriaNota = await _context.CategoriasNota
+            var categoriaNota = await context.CategoriasNota
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (categoriaNota == null)
             {
@@ -285,23 +299,23 @@ namespace Prueba.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmarBorrado(int id)
         {
-            if (_context.CategoriasNota == null)
+            if (context.CategoriasNota == null)
             {
                 return Problem("La Entidad 'ApplicationDbContext.CategoriaNota'  es null.");
             }
-            var categoriaNota = await _context.CategoriasNota.FindAsync(id);
+            var categoriaNota = await context.CategoriasNota.FindAsync(id);
             if (categoriaNota != null)
             {
-                _context.CategoriasNota.Remove(categoriaNota);
+                context.CategoriasNota.Remove(categoriaNota);
             }
 
-            await _context.SaveChangesAsync();
+            await context.SaveChangesAsync();
             return RedirectToAction(nameof(Categorias));
         }
 
         private bool CategoriaNotaExiste(int id)
         {
-            return _context.CategoriasNota.Any(e => e.Id == id);
+            return context.CategoriasNota.Any(e => e.Id == id);
         }
 
     }

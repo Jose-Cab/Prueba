@@ -17,7 +17,21 @@
                 <input asp-for="Titulo" class="form-control" />
                 <span asp-validation-for="Titulo" class="text-danger"></span>
             </div>
-            
+                <div>
+                @foreach (var categoria in Model.CategoriasNota)
+                {
+
+                        <input type="checkbox" name="CategoriaSeleccionadaId" value="@categoria.Id" /> @categoria.Nombre <br>
+                            @*@if (categoria.Id == Model.Id)
+                            {
+                                var selected = "checked"; 
+                            }*@
+
+
+                            
+                }
+                </div>
+                <br />
             <div class="form-group">
                 <input type="hidden" asp-for="Id" />
                 <button type="submit" value="Save" class="btn btn-danger mb-3">Editar</button>
@@ -28,6 +42,3 @@
 </div>
 
 
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}

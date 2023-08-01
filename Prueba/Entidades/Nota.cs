@@ -4,8 +4,10 @@ namespace Prueba.Entidades
 {
     public class Nota
     {
-        //** Creamos entidad Nota con realación MUCHOS a MUCHOS
-        //** Una Nota puede tener muchas CategoriasNota
+        public Nota() // Este es el constructor de la clase Nota
+        {
+            this.CategoriasNota = new List<CategoriaNota>(); // Inicializa CategoriasNota como una nueva lista de CategoriaNota
+        }
 
         public int Id { get; set; }
         [StringLength(250)]
