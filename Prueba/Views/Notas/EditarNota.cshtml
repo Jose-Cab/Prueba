@@ -1,4 +1,43 @@
-﻿@using Prueba.Entidades
+﻿@using Prueba.Models
+@model NotaViewModel
+
+@{
+    ViewData["Title"] = "Editar Nota";
+}
+
+<h4>@ViewBag.Title</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="EditarNota">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @*<input type="hidden" asp-for="Id" />*@
+            <div class="form-group mb-3">
+                <label asp-for="Titulo" class="control-label"></label>
+                <input asp-for="Titulo" class="form-control" />
+                <span asp-validation-for="Titulo" class="text-danger"></span>
+            </div>
+                <div>
+                @foreach (var categoria in Model.CategoriasNota)
+                {
+                    <input type="checkbox" name="CategoriaSeleccionadaId" value="@categoria.Id" 
+                    @(Model.CategoriaSeleccionadaId.Contains(categoria.Id) ? "checked" : "") /> @categoria.Nombre <br>
+
+                }
+                </div>
+                <br />
+            <div class="form-group">
+                <input type="hidden" asp-for="Id" />
+                <button type="submit" value="Save" class="btn btn-danger mb-3">Editar</button>
+                <a class="btn btn-secondary mb-3" asp-action="Index">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+
+@*@using Prueba.Entidades
 @model Nota
 
 @{
@@ -21,13 +60,12 @@
                 @foreach (var categoria in Model.CategoriasNota)
                 {
 
-                        <input type="checkbox" name="CategoriaSeleccionadaId" value="@categoria.Id" /> @categoria.Nombre <br>
-                            @*@if (categoria.Id == Model.Id)
-                            {
-                                var selected = "checked"; 
-                            }*@
-
-
+                    <div>
+                        @foreach (var categoria in Model.CategoriasNota)
+                        {
+                            <input type="checkbox" name="CategoriaSeleccionadaId" value="@categoria.Id" /> @categoria.Nombre <br>
+                        }
+                    </div>
                             
                 }
                 </div>
@@ -39,6 +77,6 @@
             </div>
         </form>
     </div>
-</div>
+</div>*@
 
 

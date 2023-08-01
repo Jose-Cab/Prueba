@@ -91,47 +91,128 @@ namespace Prueba.Controllers
             {
                 return NotFound();
             }
-
-            var nota = await context.Notas.FindAsync(id);
+            var viewModel = new NotaViewModel();
+            viewModel.CategoriasNota = context.CategoriasNota.ToList();
+            
+            var nota = await context.Notas
+                .Include(c => c.CategoriasNota)
+                .FirstOrDefaultAsync(m => m.Id == id);
             if (nota == null)
             {
                 return NotFound();
             }
-            return View(nota);
+            viewModel.Titulo = nota.Titulo.ToString();
+            viewModel.CategoriasNota = context.CategoriasNota.ToList();
+            viewModel.CategoriaSeleccionadaId = nota.CategoriasNota
+                .Select(cn => cn.Id)
+                .ToList();
+            return View(viewModel);
+
         }
+
+        //    var nota = await context.Notas
+        //.Include(c => c.CategoriasNota)
+        //.FirstOrDefaultAsync(m => m.Id == id);
+
 
         // POST: Notas/EditarNota
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditarNota(int id, [Bind("Id,Titulo")] Nota nota)
+        public async Task<IActionResult> EditarNota(NotaViewModel viewModel)
         {
-            if (id != nota.Id)
+            if (!ModelState.IsValid)
+            {
+                viewModel.CategoriasNota = context.CategoriasNota.ToList();  // Make sure to resend the list of CategoriasNota
+                return View(viewModel);
+            }
+
+            var nota = await context.Notas.Include(c => c.CategoriasNota).FirstOrDefaultAsync(n => n.Id == viewModel.Id);
+            if (nota == null)
             {
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            nota.Titulo = viewModel.Titulo;
+            nota.CategoriasNota.Clear();  // Clear current CategoriasNota
+
+            // For each selected CategoriaNota ID, add the related CategoriaNota to the Nota
+            foreach (var id in viewModel.CategoriaSeleccionadaId)
             {
-                try
+                var categoria = await context.CategoriasNota.FindAsync(id);
+                if (categoria != null)
                 {
-                    context.Update(nota);
-                    await context.SaveChangesAsync();
+                    nota.CategoriasNota.Add(categoria);
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!NotaExists(nota.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
             }
-            return View(nota);
+
+            try
+            {
+                context.Update(nota);
+                await context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!NotaExists(nota.Id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return RedirectToAction(nameof(Index));
         }
+
+        //// GET: Notas/EditarNota
+        //public async Task<IActionResult> EditarNota(int? id)
+        //{
+        //    if (id == null || context.Notas == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    var nota = await context.Notas.FindAsync(id);
+        //    if (nota == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return View(nota);
+        //}
+
+        //// POST: Notas/EditarNota
+        //[HttpPost]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> EditarNota(int id, [Bind("Id,Titulo")] Nota nota)
+        //{
+        //    if (id != nota.Id)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    if (ModelState.IsValid)
+        //    {
+        //        try
+        //        {
+        //            context.Update(nota);
+        //            await context.SaveChangesAsync();
+        //        }
+        //        catch (DbUpdateConcurrencyException)
+        //        {
+        //            if (!NotaExists(nota.Id))
+        //            {
+        //                return NotFound();
+        //            }
+        //            else
+        //            {
+        //                throw;
+        //            }
+        //        }
+        //        return RedirectToAction(nameof(Index));
+        //    }
+        //    return View(nota);
+        //}
 
         // GET: Notas/BorrarNota
         public async Task<IActionResult> BorrarNota(int? id)
