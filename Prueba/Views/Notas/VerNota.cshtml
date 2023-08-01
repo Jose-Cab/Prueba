@@ -1,10 +1,8 @@
-﻿@using Prueba.Entidades
-@using Prueba.Models
-@model Nota
+﻿@using Prueba.Models
+@model NotaViewModel
 
 @{
     ViewData["Title"] = "Ver Nota";
-    var viewmodel = new NotaViewModel();
 }
 
 <h4>@ViewBag.Title</h4>
@@ -15,20 +13,17 @@
             @Html.DisplayNameFor(model => model.Titulo)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Titulo)
+            <strong>@Html.DisplayFor(model => model.Titulo)</strong>
         </dd>
                     <div>
             @foreach (var categoria in Model.CategoriasNota)
             {
-                        <span>@categoria.Id  @categoria.Nombre</span><br />
+               <span>@categoria.Id  @categoria.Nombre</span><br />
             }
             </div>
-
-
     </dl>
 </div>
 <div>
     <a class="btn btn-primary mb-3" asp-action="EditarNota" asp-route-id="@Model?.Id">Editar</a>
     <a class="btn btn-secondary mb-3" asp-action="Index">Volver a Notas</a>
 </div>
-
