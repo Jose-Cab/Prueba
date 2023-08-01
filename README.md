@@ -16,9 +16,10 @@ Categorias         Ya funciona. Muestra todas las Categorias y los botones para 
 CrearCategoria     Ya funciona. Crea Categorias de las notas.
 EditarCategoria    Ya funciona. Permite editar la Categoria y No la data relacionada
 Borrar Categoria   Ya funciona. Borra la Categoria y la data relacionada
+EditarNota         Ya funciona. Permitir modificar los datos de la Nota, además de poder deseleccionar o seleccionar categorias.
 
-PENDIENTE:
-EditarNota         Debe permitir modificar los datos de la Nota, además de poder deseleccionar o seleccionar categorias.
+
+
 
 
 
