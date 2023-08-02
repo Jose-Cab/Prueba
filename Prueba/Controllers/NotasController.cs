@@ -21,14 +21,35 @@ namespace Prueba.Controllers
         }
 
         // GET: Listado Notas
+        // Muestra un listado de TODAS LAS NOTAS a no ser que enviemos
+        // /Notas?categoriaId=5 en cuyo caso mostrará solo las notas que pertenecen a la categoria con Id 5
         [HttpGet]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? categoriaId=null)
         {
-            return View(await context.Notas.AsNoTracking().ToListAsync()); ;
+            IQueryable<Nota> query = context.Notas.Include(c => c.CategoriasNota);
+
+            if (categoriaId != null)
+            {
+                query = query.Where(n => n.CategoriasNota.Any(cn => cn.Id == categoriaId));
+            }
+            var notas = await query.AsNoTracking().ToListAsync();
+
+            //var notas = await context.Notas.Include(c => c.CategoriasNota).AsNoTracking().ToListAsync();
+            var notaViewModel = notas.Select(n => new NotaViewModel
+            {
+                Id = n.Id,
+                Titulo = n.Titulo,
+                CategoriasNota = n.CategoriasNota.ToList(),
+                CategoriaSeleccionadaId = n.CategoriasNota
+                    .Select(cn => cn.Id)
+                    .ToList()
+            }).ToList();
+
+            return View(notaViewModel);
         }
 
         // GET: Notas/VerNota
-         public async Task<IActionResult> VerNota(int? id, NotaViewModel notaViewModel)
+        public async Task<IActionResult> VerNota(int? id, NotaViewModel notaViewModel)
         {
             if (id is null || context.Notas is null)
             {
@@ -38,22 +59,21 @@ namespace Prueba.Controllers
             var nota = await context.Notas
                 .Include(c => c.CategoriasNota)
                 .FirstOrDefaultAsync(m => m.Id == id);
+
             if (nota is null)
             {
                 return NotFound();
             }
 
-            //var viewModel = new NotaViewModel
-
             notaViewModel.Id = nota.Id;
             notaViewModel.Titulo = nota.Titulo;
             notaViewModel.CategoriasNota = nota.CategoriasNota.ToList();
-                notaViewModel.CategoriaSeleccionadaId = nota.CategoriasNota
-                .Select(cn => cn.Id)
-                .ToList();
-
+            notaViewModel.CategoriaSeleccionadaId = nota.CategoriasNota
+                    .Select(cn => cn.Id)
+                    .ToList();
             return View(notaViewModel);
         }
+
 
         // GET: Notas/CrearNota
         public IActionResult CrearNota(NotaViewModel notaViewModel)
@@ -96,7 +116,6 @@ namespace Prueba.Controllers
             {
                 return NotFound();
             }
-
             notaViewModel.CategoriasNota = context.CategoriasNota.ToList();
             
             var nota = await context.Notas
@@ -118,25 +137,25 @@ namespace Prueba.Controllers
         // POST: Notas/EditarNota
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditarNota(NotaViewModel notaViewModel)
+        public async Task<IActionResult> EditarNota(NotaViewModel viewModel)
         {
             if (!ModelState.IsValid)
             {
-                notaViewModel.CategoriasNota = context.CategoriasNota.ToList();  // Make sure to resend the list of CategoriasNota
-                return View(notaViewModel);
+                viewModel.CategoriasNota = context.CategoriasNota.ToList();  // Make sure to resend the list of CategoriasNota
+                return View(viewModel);
             }
 
-            var nota = await context.Notas.Include(c => c.CategoriasNota).FirstOrDefaultAsync(n => n.Id == notaViewModel.Id);
+            var nota = await context.Notas.Include(c => c.CategoriasNota).FirstOrDefaultAsync(n => n.Id == viewModel.Id);
             if (nota == null)
             {
                 return NotFound();
             }
 
-            nota.Titulo = notaViewModel.Titulo;
-            nota.CategoriasNota.Clear();  // Borrar CategoríasNota Actual
+            nota.Titulo = viewModel.Titulo;
+            nota.CategoriasNota.Clear();  // Borra Categorias actuales
 
-            // Para cada ID de CategoriaNota seleccionada, se agrega la CategoriaNota seleccionada relacionada a la Nota
-            foreach (var id in notaViewModel.CategoriaSeleccionadaId)
+            // Para cada ID de CategoriaNota seleccionada, agrega la CategoriaNota relacionada a la Nota
+            foreach (var id in viewModel.CategoriaSeleccionadaId)
             {
                 var categoria = await context.CategoriasNota.FindAsync(id);
                 if (categoria != null)
@@ -164,9 +183,9 @@ namespace Prueba.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-       
+
         // GET: Notas/BorrarNota
-        public async Task<IActionResult> BorrarNota(int? id)
+        public async Task<IActionResult> BorrarNota(int? id, NotaViewModel notaViewModel)
         {
             if (id == null || context.Notas == null)
             {
@@ -180,7 +199,13 @@ namespace Prueba.Controllers
                 return NotFound();
             }
 
-            return View(nota);
+            notaViewModel.Id = nota.Id;
+            notaViewModel.Titulo= nota.Titulo;
+            notaViewModel.CategoriasNota = nota.CategoriasNota.ToList();
+            notaViewModel.CategoriaSeleccionadaId = nota.CategoriasNota
+                .Select(cn => cn.Id)
+                .ToList();
+            return View(notaViewModel);
         }
 
         // POST: Notas/BorrarNota
@@ -201,7 +226,7 @@ namespace Prueba.Controllers
             await context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
+        // Se utiliza en EditarNota
         private bool NotaExists(int id)
         {
           return context.Notas.Any(e => e.Id == id);
@@ -213,30 +238,27 @@ namespace Prueba.Controllers
 
         ********************** */
 
+
         // GET: Listado CategoriasNota
-        public async Task<IActionResult> Categorias()
-        {
-            return View(await context.CategoriasNota.ToListAsync()); 
-        }
+        // Muestra un listado de TODAS LAS CATEGORIA a no ser que enviemos
+        // /Categorias?notaId=2 en cuyo caso mostrará solo las Categorías que estén relacionada con el Id de la Nota 2
 
-        // GET: Notas/CrearCategoria
-        public IActionResult CrearCategoria()
+        public async Task<IActionResult> Categorias(int? notaId = null)
         {
-            return View();
-        }
-
-        // POST: Notas/CrearCategoria
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CrearCategoria([Bind("Id,Nombre")] CategoriaNota categoriaNota)
-        {
-            if (ModelState.IsValid)
+            IQueryable<CategoriaNota> query = context.CategoriasNota.Include(n => n.Notas);
+            if (notaId != null)
             {
-                context.Add(categoriaNota);
-                await context.SaveChangesAsync();
-                return RedirectToAction(nameof(Categorias));
+                query = query.Where(c => c.Notas.Any(n => n.Id == notaId));
             }
-            return View(categoriaNota);
+            var categoriasNotas = await query.AsNoTracking().ToListAsync();
+
+            var categoriaNotaViewModel = categoriasNotas.Select(c => new CategoriaNotaViewModel
+            {
+                Id = c.Id,
+                Nombre = c.Nombre,
+                NotasDeCategoria = c.Notas.Select(n => n.Id).ToList()
+            }).ToList();
+            return View(categoriaNotaViewModel);
         }
 
         // GET: Notas/VerCategoria
@@ -248,18 +270,57 @@ namespace Prueba.Controllers
             }
 
             var categoriaNota = await context.CategoriasNota
+                .Include(c => c.Notas)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (categoriaNota == null)
             {
                 return NotFound();
             }
 
-            return View(categoriaNota);
+            var categoriaNotaViewModel = new CategoriaNotaViewModel
+            {
+                Id = categoriaNota.Id,
+                Nombre = categoriaNota.Nombre,
+                Notas = categoriaNota.Notas.Select(n => new NotaViewModel
+                {
+                    Id = n.Id,
+                    Titulo = n.Titulo,
+                }).ToList()
+            };
+
+            return View(categoriaNotaViewModel);
+        }
+
+
+        // GET: Notas/CrearCategoria
+        public IActionResult CrearCategoria()
+        {
+            return View();
+        }
+
+        // POST: Notas/CrearCategoria
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CrearCategoria([Bind("Id,Nombre")] CategoriaNotaViewModel categoriaNotaViewModel)
+        {
+            if (ModelState.IsValid)
+            {
+                var categoriaNota = new CategoriaNota
+                {
+                    Id = categoriaNotaViewModel.Id,
+                    Nombre = categoriaNotaViewModel.Nombre
+                };
+
+                context.Add(categoriaNota);
+                await context.SaveChangesAsync();
+                return RedirectToAction(nameof(Categorias));
+            }
+            return View(categoriaNotaViewModel);
         }
 
 
         // GET: Notas/EditarCategoria
-        public async Task<IActionResult> EditarCategoria(int? id)
+        public async Task<IActionResult> EditarCategoria(int? id, CategoriaNotaViewModel categoriaNotaViewModel)
         {
             if (id == null || context.CategoriasNota == null)
             {
@@ -271,15 +332,18 @@ namespace Prueba.Controllers
             {
                 return NotFound();
             }
-            return View(categoriaNota);
+
+            categoriaNotaViewModel.Id = categoriaNota.Id;
+            categoriaNotaViewModel.Nombre = categoriaNota.Nombre;
+            return View(categoriaNotaViewModel);
         }
 
         // POST: Notas/EditarCategoriaNota
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditarCategoria(int id, [Bind("Id,Nombre")] CategoriaNota categoriaNota)
+        public async Task<IActionResult> EditarCategoria(int id,  CategoriaNotaViewModel categoriaNotaViewModel)
         {
-            if (id != categoriaNota.Id)
+            if (id != categoriaNotaViewModel.Id)
             {
                 return NotFound();
             }
@@ -288,12 +352,18 @@ namespace Prueba.Controllers
             {
                 try
                 {
+                    var categoriaNota = new CategoriaNota
+                    {
+                        Id = categoriaNotaViewModel.Id,
+                        Nombre = categoriaNotaViewModel.Nombre
+                    };
+
                     context.Update(categoriaNota);
                     await context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoriaNotaExiste(categoriaNota.Id))
+                    if (!CategoriaNotaExiste(categoriaNotaViewModel.Id))
                     {
                         return NotFound();
                     }
@@ -304,12 +374,12 @@ namespace Prueba.Controllers
                 }
                 return RedirectToAction(nameof(Categorias));
             }
-            return View(categoriaNota);
+            return View(categoriaNotaViewModel);
         }
 
 
         // GET: Notas/BorrarCategoria
-        public async Task<IActionResult> BorrarCategoria(int? id)
+        public async Task<IActionResult> BorrarCategoria(int? id, CategoriaNotaViewModel categoriaNotaViewModel)
         {
             if (id == null || context.CategoriasNota == null)
             {
@@ -323,7 +393,10 @@ namespace Prueba.Controllers
                 return NotFound();
             }
 
-            return View(categoriaNota);
+            categoriaNotaViewModel.Id= categoriaNota.Id;
+            categoriaNotaViewModel.Nombre = categoriaNota.Nombre;
+
+            return View(categoriaNotaViewModel);
         }
 
         // POST: Notas/BorrarNota
@@ -345,6 +418,7 @@ namespace Prueba.Controllers
             return RedirectToAction(nameof(Categorias));
         }
 
+        // Se utiliza en EditarCategoria
         private bool CategoriaNotaExiste(int id)
         {
             return context.CategoriasNota.Any(e => e.Id == id);

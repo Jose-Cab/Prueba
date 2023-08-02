@@ -1,5 +1,5 @@
-﻿@using Prueba.Entidades
-@model CategoriaNota
+﻿@using Prueba.Models
+@model CategoriaNotaViewModel
 
 @{
     ViewData["Title"] = "Borrar Categoria";
@@ -14,7 +14,7 @@
             @Html.DisplayNameFor(model => model.Nombre)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
+            <h3>@Html.DisplayFor(model => model.Nombre)</h3>
         </dd>
     </dl>
     

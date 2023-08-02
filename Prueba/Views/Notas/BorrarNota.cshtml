@@ -1,5 +1,5 @@
-﻿@using Prueba.Entidades
-@model Nota
+﻿@using Prueba.Models
+@model NotaViewModel
 
 @{
     ViewData["Title"] = "Borrar Nota";
@@ -14,7 +14,7 @@
             @Html.DisplayNameFor(model => model.Titulo)
         </dt>
         <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Titulo)
+            <h2>@Html.DisplayFor(model => model.Titulo)</h2>
         </dd>
     </dl>
     

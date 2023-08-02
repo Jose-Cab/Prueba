@@ -1,5 +1,5 @@
-﻿@using Prueba.Entidades
-@model CategoriaNota
+﻿@using Prueba.Models
+@model CategoriaNotaViewModel
 
 @{
     ViewData["Title"] = "Ver Categoria";
@@ -13,8 +13,16 @@
             @Html.DisplayNameFor(model => model.Nombre)
         </dt>
         <dd class="col-sm-10">
-            @Html.DisplayFor(model => model.Nombre)
+            <h3>@Html.DisplayFor(model => model.Nombre)</h3>
         </dd>
+                    <div>
+            @foreach (var nota in Model.Notas)
+            {
+                            <span>@nota.Titulo</span>
+
+                <br />
+            }
+            </div>
     </dl>
 </div>
 <div>

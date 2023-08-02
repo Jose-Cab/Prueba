@@ -1,5 +1,5 @@
-﻿@using Prueba.Entidades
-@model CategoriaNota
+﻿@using Prueba.Models
+@model CategoriaNotaViewModel
 
 @{
     ViewData["Title"] = "Crear Categoria";
@@ -25,9 +25,3 @@
     </div>
 </div>
 
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

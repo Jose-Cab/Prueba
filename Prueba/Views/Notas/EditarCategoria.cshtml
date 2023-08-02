@@ -1,5 +1,5 @@
-﻿@using Prueba.Entidades
-@model CategoriaNota
+﻿@using Prueba.Models
+@model CategoriaNotaViewModel
 
 @{
     ViewData["Title"] = "Editar Categoria";
@@ -26,10 +26,3 @@
         </form>
     </div>
 </div>
-
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}
